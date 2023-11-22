@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1706.4
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Anviz_Integration_Api", "Anviz_Integration_Api\Anviz_Integration_Api.csproj", "{F809B28F-21CB-4DE8-81B2-D31E9A65DE14}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F809B28F-21CB-4DE8-81B2-D31E9A65DE14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F809B28F-21CB-4DE8-81B2-D31E9A65DE14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F809B28F-21CB-4DE8-81B2-D31E9A65DE14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F809B28F-21CB-4DE8-81B2-D31E9A65DE14}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {12387FE6-5E58-48D4-9BC0-45F71C9B4CF0}
+	EndGlobalSection
+EndGlobal

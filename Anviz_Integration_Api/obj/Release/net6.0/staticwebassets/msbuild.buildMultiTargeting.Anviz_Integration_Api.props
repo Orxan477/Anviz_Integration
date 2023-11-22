@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="../build/Anviz_Integration_Api.props" />
+</Project>
