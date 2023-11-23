@@ -1,5 +1,8 @@
+using System.Collections.Specialized;
+using Anviz_Integration_Api.Model;
 using Anviz_Integration_Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 namespace Anviz_Integration_Api.Controllers
 {
@@ -8,16 +11,15 @@ namespace Anviz_Integration_Api.Controllers
     public class AnvizController : ControllerBase
     {
         private IAnvizService _anvizService;
-        private ILogger<AnvizController> _logger;
+        private AppDbContext _context;
 
-        public AnvizController(IAnvizService anvizSerivce, ILogger<AnvizController> logger)
+        public AnvizController(IAnvizService anvizSerivce,AppDbContext context)
         {
             _anvizService = anvizSerivce;
-            _logger = logger;
-
+            _context = context;
         }
         [HttpPost]
-        [Route("/register")]
+        [Route("/auth")]
         public async Task Index()
         {
             await _anvizService.GetToken();

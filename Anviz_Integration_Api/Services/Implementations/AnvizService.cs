@@ -1,8 +1,10 @@
 ﻿using System.Text;
 using System.Text.Json;
 using Anviz_Integration_Api.DTOs;
+using Anviz_Integration_Api.Model;
 using Anviz_Integration_Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -16,10 +18,12 @@ namespace Anviz_Integration_Api.Services.Implementations
         public HttpResponseMessage response;
         public String responseContent;
         private IConfiguration _configuration;
+        private AppDbContext _context;
 
-        public AnvizService(IConfiguration configuration)
+        public AnvizService(IConfiguration configuration,AppDbContext context)
         {
             _configuration = configuration;
+            _context = context;
         }
         //public string mainWebhookUrl =;
 
@@ -73,7 +77,7 @@ namespace Anviz_Integration_Api.Services.Implementations
                     workno = "",
                     order = "asc",
                     page = "1",
-                    per_page = "30"
+                    per_page = "100"
                 }
             };
             var recordResponse = await SendPostRequest(recordRequest);
@@ -92,26 +96,60 @@ namespace Anviz_Integration_Api.Services.Implementations
 
         public async Task Bitrix(int id)
         {
-            webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.status.json";
-            var requestBody = new
+            if (await IsExpired(id))
             {
-                USER_ID = id
-            };
-            var requestBodyJson = JsonConvert.SerializeObject(requestBody);
-            requestBodyContent = new StringContent(requestBodyJson, Encoding.UTF8, "application/json");
-            response = await client.PostAsync(webhookUrl, requestBodyContent);
-            responseContent = await response.Content.ReadAsStringAsync();
-            var jObject = JObject.Parse(responseContent);
-            if ((string)jObject["result"]["STATUS"] == "OPENED")
-                webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.close.json";
-               
-            else
-                webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.open.json";
-            
-            response = await client.PostAsync(webhookUrl, requestBodyContent);
-            responseContent = await response.Content.ReadAsStringAsync();
-        }
+                webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.status.json";
+                var requestBody = new
+                {
+                    USER_ID = id
+                };
+                var requestBodyJson = JsonConvert.SerializeObject(requestBody);
+                requestBodyContent = new StringContent(requestBodyJson, Encoding.UTF8, "application/json");
+                response = await client.PostAsync(webhookUrl, requestBodyContent);
+                responseContent = await response.Content.ReadAsStringAsync();
+                var jObject = JObject.Parse(responseContent);
+                if ((string)jObject["result"]["STATUS"] == "OPENED")
+                    webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.close.json";
 
+                else
+                    webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.open.json";
+
+                response = await client.PostAsync(webhookUrl, requestBodyContent);
+                responseContent = await response.Content.ReadAsStringAsync();
+            }
+        }
+        private async Task<bool> IsExpired(int id)
+        {
+            var model = await _context.Logs.Where(x => x.UserId == id).FirstOrDefaultAsync();
+
+            DateTime now = DateTime.Now;
+            DateTime expireDate = now.AddMinutes(3);
+            if (model is null)
+            {
+                var log = new Log()
+                {
+                    UserId = id,
+                    ExpireDate = expireDate,
+                };
+                await _context.Logs.AddAsync(log);
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            else
+            {
+                if (DateTime.Now > model.ExpireDate)
+                {
+                    model.ExpireDate = expireDate;
+                    await _context.SaveChangesAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            
+        }
         private DateDto GetTime() {
             DateTime currentDate = DateTime.UtcNow;
             DateTime startOfDay = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 0, 0, 0, DateTimeKind.Utc);
