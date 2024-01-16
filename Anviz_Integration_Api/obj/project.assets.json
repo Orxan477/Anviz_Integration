@@ -11117,11 +11117,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/orkhanganbarov/Documents/Anviz_Integration_Api/Anviz_Integration_Api/Anviz_Integration_Api.csproj",
+      "projectUniqueName": "/Users/orkhanganbarov/Desktop/Anviz_Integration_Api/Anviz_Integration_Api/Anviz_Integration_Api.csproj",
       "projectName": "Anviz_Integration_Api",
-      "projectPath": "/Users/orkhanganbarov/Documents/Anviz_Integration_Api/Anviz_Integration_Api/Anviz_Integration_Api.csproj",
+      "projectPath": "/Users/orkhanganbarov/Desktop/Anviz_Integration_Api/Anviz_Integration_Api/Anviz_Integration_Api.csproj",
       "packagesPath": "/Users/orkhanganbarov/.nuget/packages/",
-      "outputPath": "/Users/orkhanganbarov/Documents/Anviz_Integration_Api/Anviz_Integration_Api/obj/",
+      "outputPath": "/Users/orkhanganbarov/Desktop/Anviz_Integration_Api/Anviz_Integration_Api/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/orkhanganbarov/.nuget/NuGet/NuGet.Config"

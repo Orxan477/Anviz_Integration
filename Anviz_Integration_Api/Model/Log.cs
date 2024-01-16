@@ -5,7 +5,8 @@ namespace Anviz_Integration_Api.Model
 	{
 		public int Id { get; set; }
 		public int UserId { get; set; }
-		public DateTime ExpireDate { get; set; }
+		public string WebhookUrl { get; set; }
+        public DateTime ExpireDate { get; set; }
 
 	}
 }

@@ -11,12 +11,10 @@ namespace Anviz_Integration_Api.Controllers
     public class AnvizController : ControllerBase
     {
         private IAnvizService _anvizService;
-        private AppDbContext _context;
 
-        public AnvizController(IAnvizService anvizSerivce,AppDbContext context)
+        public AnvizController(IAnvizService anvizSerivce)
         {
             _anvizService = anvizSerivce;
-            _context = context;
         }
         [HttpPost]
         [Route("/auth")]

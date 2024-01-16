@@ -96,9 +96,10 @@ namespace Anviz_Integration_Api.Services.Implementations
 
         public async Task Bitrix(int id)
         {
-            if (await IsExpired(id))
+            string webhook = await IsExpired(id);
+            if (webhookUrl != "null")
             {
-                webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.status.json";
+                webhookUrl = webhook + "timeman.status.json";
                 var requestBody = new
                 {
                     USER_ID = id
@@ -109,45 +110,35 @@ namespace Anviz_Integration_Api.Services.Implementations
                 responseContent = await response.Content.ReadAsStringAsync();
                 var jObject = JObject.Parse(responseContent);
                 if ((string)jObject["result"]["STATUS"] == "OPENED")
-                    webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.close.json";
+                    webhookUrl = webhook + "timeman.close.json";
 
                 else
-                    webhookUrl = _configuration.GetSection("Anviz")["BitrixUrl"] + "timeman.open.json";
+                    webhookUrl = webhook + "timeman.open.json";
 
                 response = await client.PostAsync(webhookUrl, requestBodyContent);
                 responseContent = await response.Content.ReadAsStringAsync();
             }
         }
-        private async Task<bool> IsExpired(int id)
+        private async Task<string> IsExpired(int id)
         {
             var model = await _context.Logs.Where(x => x.UserId == id).FirstOrDefaultAsync();
 
             DateTime now = DateTime.Now;
             DateTime expireDate = now.AddMinutes(3);
-            if (model is null)
-            {
-                var log = new Log()
-                {
-                    UserId = id,
-                    ExpireDate = expireDate,
-                };
-                await _context.Logs.AddAsync(log);
-                await _context.SaveChangesAsync();
-                return true;
-            }
-            else
+            if (model != null)
             {
                 if (DateTime.Now > model.ExpireDate)
                 {
                     model.ExpireDate = expireDate;
                     await _context.SaveChangesAsync();
-                    return true;
+                    return model.WebhookUrl;
                 }
                 else
                 {
-                    return false;
+                    return "null";
                 }
             }
+            else return "null";
             
         }
         private DateDto GetTime() {
