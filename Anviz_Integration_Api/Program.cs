@@ -2,9 +2,23 @@
 using Anviz_Integration_Api.Services.Implementations;
 using Anviz_Integration_Api.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
+string logDirectory = "logs";
+if (!Directory.Exists(logDirectory))
+{
+    Directory.CreateDirectory(logDirectory);
+}
+
+// Serilog yapılandırması
+Serilog.Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .WriteTo.File(Path.Combine(logDirectory, "log.txt"), rollingInterval: RollingInterval.Day)
+    .CreateLogger();
+
+Serilog.Log.Information("Uygulama başlatıldı.");
 
 
 builder.Services.AddControllers();
@@ -28,6 +42,13 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+//app.MapGet("/", () =>
+//{
+logger.LogInformation("Start");
+//    return "Merhaba, API!";
+//});
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

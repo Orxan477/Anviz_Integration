@@ -1,8 +1,5 @@
-using System.Collections.Specialized;
-using Anviz_Integration_Api.Model;
-using Anviz_Integration_Api.Services.Interfaces;
+﻿using Anviz_Integration_Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Net.Http.Headers;
 
 namespace Anviz_Integration_Api.Controllers
 {
@@ -11,15 +8,18 @@ namespace Anviz_Integration_Api.Controllers
     public class AnvizController : ControllerBase
     {
         private IAnvizService _anvizService;
+        private ILogger<AnvizController> _logger;
 
-        public AnvizController(IAnvizService anvizSerivce)
+        public AnvizController(IAnvizService anvizSerivce, ILogger<AnvizController> logger)
         {
             _anvizService = anvizSerivce;
+            _logger = logger;
         }
         [HttpPost]
         [Route("/auth")]
         public async Task Index()
         {
+            _logger.LogInformation("Ana sayfa endpoint'ine istek geldi.");
             await _anvizService.GetToken();
         }
     }
