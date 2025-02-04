@@ -491,7 +491,6 @@
 /Users/orkhanganbarov/Desktop/Anviz_Integration_Api/Anviz_Integration_Api/obj/Debug/net6.0/Anviz_Integration_Api.genruntimeconfig.cache
 /Users/orkhanganbarov/Desktop/Anviz_Integration_Api/Anviz_Integration_Api/obj/Debug/net6.0/ref/Anviz_Integration_Api.dll
 C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\appsettings.Development.json
-C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\appsettings.json
 C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\Anviz_Integration_Api.exe
 C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\Anviz_Integration_Api.deps.json
 C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\Anviz_Integration_Api.runtimeconfig.json
@@ -747,3 +746,4 @@ C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debu
 C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\Serilog.Sinks.Console.dll
 C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\Serilog.Sinks.Debug.dll
 C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\Serilog.Sinks.File.dll
+C:\Users\orxan\OneDrive\Desktop\Anviz_Integration\Anviz_Integration_Api\bin\Debug\net6.0\appsettings.json

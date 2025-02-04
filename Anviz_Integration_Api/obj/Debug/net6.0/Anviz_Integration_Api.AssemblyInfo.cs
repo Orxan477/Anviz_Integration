@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Anviz_Integration_Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+04e6e421d46dd64d4097455e3156a89bf85c7128")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+169726e0c6bcf9b74448967c8b5d69f681d2b20b")]
 [assembly: System.Reflection.AssemblyProductAttribute("Anviz_Integration_Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Anviz_Integration_Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

@@ -6,26 +6,23 @@ using Anviz_Integration_Api.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+
+//using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Anviz_Integration_Api.Services.Implementations
 {
     public class AnvizService : IAnvizService
     {
-        private static readonly HttpClient client = new HttpClient();
-        public string webhookUrl;
-        public StringContent requestBodyContent;
-        public HttpResponseMessage response;
-        public String responseContent;
-        private IConfiguration _configuration;
-        private AppDbContext _context;
+        private static readonly HttpClient _client = new HttpClient();
+        private readonly IConfiguration _configuration;
+        private readonly AppDbContext _context;
 
-        public AnvizService(IConfiguration configuration,AppDbContext context)
+        public AnvizService(IConfiguration configuration, AppDbContext context)
         {
             _configuration = configuration;
             _context = context;
         }
-        //public string mainWebhookUrl =;
 
         public async Task GetToken()
         {
@@ -41,18 +38,22 @@ namespace Anviz_Integration_Api.Services.Implementations
                 },
                 payload = new
                 {
-                    api_key = _configuration.GetSection("Anviz")["ApiKey"],
-                    api_secret = _configuration.GetSection("Anviz")["ApiSecret"]
+                    api_key = _configuration["Anviz:ApiKey"],
+                    api_secret = _configuration["Anviz:ApiSecret"]
                 }
             };
+
             var tokenResponse = await SendPostRequest(tokenRequest);
             var valueProperty = tokenResponse.Value as JsonElement?;
-            var token = valueProperty?.GetProperty("payload")
-                                      .GetProperty("token");
-            await GetRecord(Convert.ToString(token));
+            var token = valueProperty?.GetProperty("payload").GetProperty("token").GetString();
+
+            if (!string.IsNullOrEmpty(token))
+            {
+                await GetRecord(token);
+            }
         }
 
-        public async Task GetRecord(string tokenRequestCustom)
+        public async Task GetRecord(string token)
         {
             var time = GetTime();
             var recordRequest = new
@@ -68,7 +69,7 @@ namespace Anviz_Integration_Api.Services.Implementations
                 authorize = new
                 {
                     type = "token",
-                    token = tokenRequestCustom,
+                    token
                 },
                 payload = new
                 {
@@ -80,88 +81,87 @@ namespace Anviz_Integration_Api.Services.Implementations
                     per_page = "100"
                 }
             };
+
             var recordResponse = await SendPostRequest(recordRequest);
             var valueProperty = recordResponse.Value as JsonElement?;
-            var list = valueProperty?.GetProperty("payload")
-                                        .GetProperty("list");
-            var list_json = (JsonElement)list;
-            var lastItem = list_json.EnumerateArray()
-                                    .LastOrDefault()
-                                    .GetProperty("employee")
-                                    .GetProperty("workno");
-            var id = Convert.ToString(lastItem);
-            var id_num = Convert.ToInt32(id);
-            await Bitrix(id_num);
+            var list = valueProperty?.GetProperty("payload").GetProperty("list");
+
+            if (list?.ValueKind == JsonValueKind.Array)
+            {
+                var lastItem = list.Value.EnumerateArray().LastOrDefault();
+                if (lastItem.ValueKind != JsonValueKind.Undefined)
+                {
+                    var id = lastItem.GetProperty("employee").GetProperty("workno").GetString();
+                    if (int.TryParse(id, out int idNum))
+                    {
+                        await Bitrix(idNum);
+                    }
+                }
+            }
         }
 
         public async Task Bitrix(int id)
         {
             string webhook = await IsExpired(id);
-            if (webhookUrl != "null")
+            if (webhook != "null")
             {
-                webhookUrl = webhook + "timeman.status.json";
-                var requestBody = new
-                {
-                    USER_ID = id
-                };
-                var requestBodyJson = JsonConvert.SerializeObject(requestBody);
-                requestBodyContent = new StringContent(requestBodyJson, Encoding.UTF8, "application/json");
-                response = await client.PostAsync(webhookUrl, requestBodyContent);
-                responseContent = await response.Content.ReadAsStringAsync();
-                var jObject = JObject.Parse(responseContent);
-                if ((string)jObject["result"]["STATUS"] == "OPENED")
-                    webhookUrl = webhook + "timeman.close.json";
-
-                else
-                    webhookUrl = webhook + "timeman.open.json";
-
-                response = await client.PostAsync(webhookUrl, requestBodyContent);
-                responseContent = await response.Content.ReadAsStringAsync();
+                await UpdateTimemanStatus(webhook, id);
             }
         }
+
         private async Task<string> IsExpired(int id)
         {
-            var model = await _context.Logs.Where(x => x.UserId == id).FirstOrDefaultAsync();
+            var model = await _context.Logs.FirstOrDefaultAsync(x => x.UserId == id);
+            DateTime expireDate = DateTime.Now.AddMinutes(3);
 
-            DateTime now = DateTime.Now;
-            DateTime expireDate = now.AddMinutes(3);
-            if (model != null)
+            if (model != null && DateTime.Now > model.ExpireDate)
             {
-                if (DateTime.Now > model.ExpireDate)
-                {
-                    model.ExpireDate = expireDate;
-                    await _context.SaveChangesAsync();
-                    return model.WebhookUrl;
-                }
-                else
-                {
-                    return "null";
-                }
+                model.ExpireDate = expireDate;
+                await _context.SaveChangesAsync();
+                return model.WebhookUrl;
             }
-            else return "null";
-            
+            return "null";
         }
-        private DateDto GetTime() {
-            DateTime currentDate = DateTime.UtcNow;
-            DateTime startOfDay = new DateTime(currentDate.Year, currentDate.Month, currentDate.Day, 0, 0, 0, DateTimeKind.Utc);
+
+        private async Task UpdateTimemanStatus(string webhook, int userId)
+        {
+            var requestBody = new { USER_ID = userId };
+            var requestBodyJson = JsonConvert.SerializeObject(requestBody);
+            var content = new StringContent(requestBodyJson, Encoding.UTF8, "application/json");
+
+            string webhookUrl = $"{webhook}timeman.status.json";
+            var response = await _client.PostAsync(webhookUrl, content);
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var jObject = JObject.Parse(responseContent);
+
+            webhookUrl = (string)jObject["result"]["STATUS"] == "OPENED"
+                ? $"{webhook}timeman.close.json"
+                : $"{webhook}timeman.open.json";
+
+            await _client.PostAsync(webhookUrl, content);
+        }
+
+        private DateDto GetTime()
+        {
+            DateTime startOfDay = DateTime.UtcNow.Date;
             DateTime endOfDay = startOfDay.AddDays(1).AddTicks(-1);
 
-            return new DateDto()
+            return new DateDto
             {
                 Start = startOfDay.ToString("yyyy-MM-ddTHH:mm:ss"),
-                End = endOfDay.ToString("yyyy-MM-ddTHH:mm:ss"),
+                End = endOfDay.ToString("yyyy-MM-ddTHH:mm:ss")
             };
         }
+
         private async Task<JsonResult> SendPostRequest(object requestBody)
         {
             var jsonRequest = System.Text.Json.JsonSerializer.Serialize(requestBody);
             var content = new StringContent(jsonRequest, Encoding.UTF8, "application/json");
-            var response = await client.PostAsync(_configuration.GetSection("Anviz")["ApiUrl"], content);
-            using var responseStream = await response.Content.ReadAsStreamAsync();
-            return new JsonResult(await System.Text.Json.JsonSerializer.DeserializeAsync<dynamic>(responseStream));
-               
-        }
+            var response = await _client.PostAsync(_configuration["Anviz:ApiUrl"], content);
 
+            using var responseStream = await response.Content.ReadAsStreamAsync();
+            var result = await System.Text.Json.JsonSerializer.DeserializeAsync<dynamic>(responseStream);
+            return new JsonResult(result);
+        }
     }
 }
-
